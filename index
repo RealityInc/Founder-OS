@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Founder OS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0d0d0f;--surface:#141417;--surface2:#1c1c21;--border:#2a2a32;--accent:#c8f060;--accent2:#60a8f0;--accent3:#f060a8;--text:#e8e8ec;--muted:#6b6b7a;--danger:#f06060}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.logo-mark{font-family:'DM Serif Display',serif;font-size:20px;color:var(--accent);letter-spacing:-0.5px}
+.logo-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.nav-section{padding:16px 12px 8px}
+.nav-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:0 8px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--muted);transition:all 0.15s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(200,240,96,0.1);color:var(--accent);font-weight:500}
+.nav-icon{font-size:14px;width:18px;text-align:center}
+.stage-badge{margin:16px 12px;padding:10px 12px;background:rgba(200,240,96,0.06);border:1px solid rgba(200,240,96,0.2);border-radius:8px}
+.stage-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px}
+.stage-name{font-size:13px;font-weight:500;color:var(--text);margin-top:3px}
+.main{display:flex;flex-direction:column;min-height:100vh}
+.topbar{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);position:sticky;top:0;z-index:10}
+.page-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text)}
+.page-subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+.content{flex:1;padding:32px;display:none}
+.content.active{display:block}
+.onboarding{position:fixed;inset:0;background:rgba(13,13,15,0.96);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.onboarding-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;max-width:560px;width:100%;max-height:92vh;overflow-y:auto}
+.onboarding-title{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:8px}
+.onboarding-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.ob-steps{display:flex;align-items:center;margin-bottom:28px}
+.ob-step{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ob-step-num{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);transition:all 0.2s}
+.ob-step.active .ob-step-num{border-color:var(--accent);color:var(--accent);background:rgba(200,240,96,0.1)}
+.ob-step.done .ob-step-num{border-color:var(--accent);background:var(--accent);color:#0d0d0f}
+.ob-step-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.ob-step.active .ob-step-label{color:var(--accent)}
+.ob-step-line{flex:1;height:1px;background:var(--border);margin:0 8px;margin-bottom:18px}
+.ob-panel{display:none}
+.ob-panel.active{display:block}
+.path-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+.path-opt{padding:20px 16px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.15s;text-align:center}
+.path-opt:hover{border-color:var(--accent);background:rgba(200,240,96,0.04)}
+.path-opt.selected{border-color:var(--accent);background:rgba(200,240,96,0.08)}
+.path-icon{font-size:28px;margin-bottom:10px}
+.path-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.path-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:36px 24px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(200,240,96,0.04)}
+.drop-icon{font-size:28px;margin-bottom:10px;color:var(--muted)}
+.drop-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.drop-sub{font-size:12px;color:var(--muted)}
+.file-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.file-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px}
+.file-item-icon{font-size:16px;flex-shrink:0}
+.file-item-name{flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-item-size{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);flex-shrink:0}
+.file-item-remove{width:20px;height:20px;border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:3px;transition:all 0.15s;flex-shrink:0}
+.file-item-remove:hover{background:rgba(240,96,96,0.15);color:var(--danger)}
+.processing-state{text-align:center;padding:24px 0}
+.processing-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-label{font-size:14px;color:var(--text);margin-bottom:6px}
+.processing-sub{font-size:12px;color:var(--muted)}
+.ob-btn-row{display:flex;gap:10px;margin-top:20px}
+.btn-primary{padding:12px;background:var(--accent);border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;color:#0d0d0f;transition:all 0.15s;width:100%}
+.btn-primary:hover:not(:disabled){background:#d4f56a;transform:translateY(-1px)}
+.btn-primary:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;transform:none}
+.btn-secondary{padding:12px 16px;background:none;border:1px solid var(--border);border-radius:10px;font-size:14px;color:var(--muted);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.btn-secondary:hover{border-color:var(--text);color:var(--text)}
+.field-group{margin-bottom:14px}
+.field-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block}
+.field-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s;resize:none}
+.field-input:focus{border-color:var(--accent)}
+.field-input::placeholder{color:var(--muted)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stage-select{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stage-opt{padding:10px 8px;border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:12px;color:var(--muted);transition:all 0.15s}
+.stage-opt:hover{border-color:var(--accent);color:var(--text)}
+.stage-opt.selected{border-color:var(--accent);background:rgba(200,240,96,0.08);color:var(--accent)}
+.stage-opt-icon{font-size:18px;margin-bottom:4px}
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 73px)}
+.chat-messages{flex:1;overflow-y:auto;padding:24px 0;display:flex;flex-direction:column;gap:20px}
+.msg{display:flex;gap:12px;animation:fadeUp 0.3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-avatar{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;margin-top:2px}
+.msg.ai .msg-avatar{background:rgba(200,240,96,0.15);color:var(--accent)}
+.msg.user .msg-avatar{background:rgba(96,168,240,0.15);color:var(--accent2)}
+.msg-body{flex:1;max-width:780px}
+.msg-name{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.msg-text{font-size:14px;line-height:1.7;color:var(--text)}
+.msg-text p{margin-bottom:10px}
+.msg-text p:last-child{margin-bottom:0}
+.msg-text strong{color:var(--accent);font-weight:600}
+.msg-text ul{padding-left:18px;margin:8px 0}
+.msg-text li{margin-bottom:5px}
+.suggestion-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{padding:6px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.15s;background:var(--surface)}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,240,96,0.05)}
+.chat-input-area{padding:16px 0 0;border-top:1px solid var(--border)}
+.module-selector{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.mod-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:none;font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.mod-btn:hover,.mod-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,240,96,0.06)}
+.input-row{display:flex;gap:10px;align-items:flex-end}
+.chat-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;resize:none;outline:none;min-height:48px;max-height:140px;transition:border-color 0.15s;line-height:1.5}
+.chat-input:focus{border-color:var(--accent)}
+.chat-input::placeholder{color:var(--muted)}
+.send-btn{width:48px;height:48px;background:var(--accent);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 0.15s;flex-shrink:0}
+.send-btn:hover{background:#d4f56a;transform:translateY(-1px)}
+.send-btn:disabled{background:var(--border);cursor:not-allowed;transform:none}
+.loading-dots span{display:inline-block;width:6px;height:6px;background:var(--muted);border-radius:50%;margin:0 2px;animation:dot-bounce 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:0.2s}
+.loading-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dot-bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color 0.2s;cursor:pointer}
+.card:hover{border-color:var(--accent)}
+.card-icon{font-size:22px;margin-bottom:12px}
+.card-title{font-family:'DM Serif Display',serif;font-size:16px;margin-bottom:6px}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.card-cta{margin-top:14px;font-size:12px;color:var(--accent);font-weight:500;display:flex;align-items:center;gap:4px}
+.checklist{display:flex;flex-direction:column;gap:8px}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s}
+.check-item:hover{background:var(--surface2)}
+.check-item.done{border-color:rgba(200,240,96,0.3)}
+.check-box{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:11px}
+.check-item.done .check-box{background:var(--accent);border-color:var(--accent);color:#0d0d0f}
+.check-content{flex:1}
+.check-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.check-item.done .check-title{color:var(--muted);text-decoration:line-through}
+.check-desc{font-size:12px;color:var(--muted);line-height:1.4}
+.check-tag{font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0;height:fit-content}
+.tag-legal{background:rgba(240,96,96,0.15);color:var(--danger)}
+.tag-strategy{background:rgba(200,240,96,0.1);color:var(--accent)}
+.tag-team{background:rgba(96,168,240,0.1);color:var(--accent2)}
+.tag-product{background:rgba(240,96,168,0.1);color:var(--accent3)}
+.tag-done{background:rgba(200,240,96,0.1);color:var(--accent)}
+.progress-wrap{margin-bottom:28px}
+.progress-header{display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--muted)}
+.progress-bar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s ease}
+.section-header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.section-title{font-family:'DM Serif Display',serif;font-size:18px}
+.section-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.team-grid{display:flex;flex-direction:column;gap:10px}
+.team-row{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;align-items:center;font-size:13px}
+.team-row.header{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;background:none;border:none;padding:0 16px 6px}
+.person-name{font-weight:500}
+.person-role{color:var(--muted);font-size:12px}
+.status-pill{display:inline-block;padding:3px 8px;border-radius:10px;font-size:11px;font-family:'DM Mono',monospace}
+.pill-active{background:rgba(200,240,96,0.1);color:var(--accent)}
+.pill-prospect{background:rgba(96,168,240,0.1);color:var(--accent2)}
+.pill-considering{background:rgba(240,96,168,0.1);color:var(--accent3)}
+.editable{border:1px dashed transparent;border-radius:4px;padding:2px 4px;transition:border-color 0.15s;cursor:text;outline:none;min-width:40px;display:inline-block}
+.editable:hover{border-color:var(--border)}
+.editable:focus{border-color:var(--accent);background:var(--surface2)}
+.add-row-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px dashed var(--border);border-radius:8px;background:none;color:var(--muted);font-size:13px;cursor:pointer;width:100%;transition:all 0.15s;margin-top:8px}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent)}
+.divider{height:1px;background:var(--border);margin:28px 0}
+.deal-box{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.deal-box p{font-size:13px;color:var(--muted);margin-bottom:16px}
+.deal-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;outline:none;min-height:120px;transition:border-color 0.15s}
+.deal-textarea:focus{border-color:var(--accent)}
+.btn-accent{margin-top:12px;padding:10px 20px;background:var(--accent);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:#0d0d0f;transition:all 0.15s}
+.btn-accent:hover{background:#d4f56a}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;flex-shrink:0}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all 0.2s}
+.hamburger:hover span{background:var(--accent)}
+.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;opacity:0;transition:opacity 0.25s}
+.mobile-overlay.open{opacity:1}
+.mobile-drawer{position:fixed;top:0;left:0;height:100vh;width:280px;background:var(--surface);border-right:1px solid var(--border);z-index:201;transform:translateX(-100%);transition:transform 0.25s ease;display:flex;flex-direction:column;overflow-y:auto}
+.mobile-drawer.open{transform:translateX(0)}
+.mobile-drawer-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.mobile-drawer-close:hover{color:var(--text);background:var(--surface2)}
+.mobile-nav-bottom{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:100;padding:8px 4px 12px}
+.mob-nav-items{display:flex;justify-content:space-around;align-items:center}
+.mob-nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border:none;background:none;cursor:pointer;border-radius:8px;transition:all 0.15s;min-width:52px}
+.mob-nav-btn .mob-icon{font-size:18px;line-height:1}
+.mob-nav-btn .mob-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.mob-nav-btn.active .mob-label{color:var(--accent)}
+.mob-nav-btn.active .mob-icon{filter:drop-shadow(0 0 4px rgba(200,240,96,0.6))}
+@media(max-width:768px){
+  .shell{grid-template-columns:1fr}.sidebar{display:none}.content{padding:20px;padding-bottom:90px}
+  .topbar{padding:14px 16px}.cards-grid{grid-template-columns:1fr}.team-row{grid-template-columns:1fr 1fr}
+  .onboarding-card{padding:24px}.field-row{grid-template-columns:1fr}
+  .stage-select{grid-template-columns:repeat(2,1fr)}.path-options{grid-template-columns:1fr}
+  .hamburger{display:flex}
+  .mobile-nav-bottom{display:block}
+  .chat-wrap{height:calc(100vh - 73px - 72px)}
+}
+</style>
+</head>
+<body>
+
+<div class="onboarding" id="onboarding">
+  <div class="onboarding-card">
+    <div class="ob-steps">
+      <div class="ob-step active" id="step-ind-1"><div class="ob-step-num">1</div><div class="ob-step-label">Choose path</div></div>
+      <div class="ob-step-line"></div>
+      <div class="ob-step" id="step-ind-2"><div class="ob-step-num">2</div><div class="ob-step-label">Add context</div></div>
+      <div class="ob-step-line"></div>
+      <div class="ob-step" id="step-ind-3"><div class="ob-step-num">3</div><div class="ob-step-label">Review &amp; launch</div></div>
+    </div>
+    <div class="ob-panel active" id="ob-step-1">
+      <div class="onboarding-title">Welcome to Founder OS</div>
+      <div class="onboarding-sub">How would you like to set up your startup OS? You can always edit everything later.</div>
+      <div class="path-options">
+        <div class="path-opt" id="path-upload" onclick="selectPath('upload')">
+          <div class="path-icon">&#x1F4C4;</div>
+          <div class="path-title">Upload documents</div>
+          <div class="path-desc">Drop in pitch decks, business plans, competitive analyses — AI reads them and pre-fills your OS automatically.</div>
+        </div>
+        <div class="path-opt" id="path-manual" onclick="selectPath('manual')">
+          <div class="path-icon">&#x270F;&#xFE0F;</div>
+          <div class="path-title">Fill in manually</div>
+          <div class="path-desc">Answer a few quick questions about your startup and jump straight in.</div>
+        </div>
+      </div>
+      <button class="btn-primary" id="step1-next" onclick="goToStep(2)" disabled style="margin-top:20px">Continue &rarr;</button>
+    </div>
+    <div class="ob-panel" id="ob-step-2-upload">
+      <div class="onboarding-title">Upload your documents</div>
+      <div class="onboarding-sub">PDFs, Word docs, or text files. Pitch decks, business plans, competitive analyses, co-founder agreements.</div>
+      <div class="drop-zone" id="drop-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="document.getElementById('file-input').click()">
+        <div class="drop-icon">&#x2B06;</div>
+        <div class="drop-title">Drop files here or click to browse</div>
+        <div class="drop-sub">PDF, DOCX, TXT, MD &middot; Up to 5 files</div>
+        <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.txt,.md" style="display:none" onchange="handleFileSelect(event)" />
+      </div>
+      <div class="file-list" id="file-list"></div>
+      <div class="ob-btn-row">
+        <button class="btn-secondary" onclick="goToStep(1)">&larr; Back</button>
+        <button class="btn-primary" id="step2-upload-next" onclick="processDocuments()" disabled style="flex:1">Analyze documents &rarr;</button>
+      </div>
+    </div>
+    <div class="ob-panel" id="ob-step-2-manual">
+      <div class="onboarding-title">Tell us about your startup</div>
+      <div class="onboarding-sub">Fill in what you know &mdash; everything is editable later.</div>
+      <div class="field-row">
+        <div class="field-group"><label class="field-label">Company Name</label><input class="field-input" id="ob-company" placeholder="e.g. Acme Inc." /></div>
+        <div class="field-group"><label class="field-label">Your Name</label><input class="field-input" id="ob-founder" placeholder="e.g. Jane Smith" /></div>
+      </div>
+      <div class="field-group"><label class="field-label">What does your startup do?</label><textarea class="field-input" id="ob-description" rows="2" placeholder="e.g. We build AI-powered compliance software for aerospace manufacturers..."></textarea></div>
+      <div class="field-row">
+        <div class="field-group"><label class="field-label">Industry / Market</label><input class="field-input" id="ob-industry" placeholder="e.g. Enterprise SaaS" /></div>
+        <div class="field-group"><label class="field-label">Co-founder(s)</label><input class="field-input" id="ob-cofounders" placeholder="e.g. Simon Lee (CTO)" /></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Current Stage</label>
+        <div class="stage-select" id="stage-select">
+          <div class="stage-opt" onclick="selectStage(this,'Idea Pre-Product')"><div class="stage-opt-icon">&#x1F4A1;</div>Idea</div>
+          <div class="stage-opt selected" onclick="selectStage(this,'Pre-Seed Founding')"><div class="stage-opt-icon">&#x1F331;</div>Pre-Seed</div>
+          <div class="stage-opt" onclick="selectStage(this,'Seed Early Traction')"><div class="stage-opt-icon">&#x1F680;</div>Seed</div>
+          <div class="stage-opt" onclick="selectStage(this,'Series A Scaling')"><div class="stage-opt-icon">&#x1F4C8;</div>Series A</div>
+          <div class="stage-opt" onclick="selectStage(this,'Series B+ Growth')"><div class="stage-opt-icon">&#x26A1;</div>Series B+</div>
+          <div class="stage-opt" onclick="selectStage(this,'Revenue Bootstrapped')"><div class="stage-opt-icon">&#x1F4B0;</div>Bootstrapped</div>
+        </div>
+      </div>
+      <div class="ob-btn-row">
+        <button class="btn-secondary" onclick="goToStep(1)">&larr; Back</button>
+        <button class="btn-primary" onclick="prefillReviewFromManual();goToStep(3);" style="flex:1">Review &rarr;</button>
+      </div>
+    </div>
+    <div class="ob-panel" id="ob-step-3">
+      <div class="onboarding-title">Review &amp; launch</div>
+      <div class="onboarding-sub" id="review-sub">Confirm your details before launching.</div>
+      <div class="field-row">
+        <div class="field-group"><label class="field-label">Company Name</label><input class="field-input" id="rev-company" placeholder="e.g. Acme Inc." /></div>
+        <div class="field-group"><label class="field-label">Your Name</label><input class="field-input" id="rev-founder" placeholder="e.g. Jane Smith" /></div>
+      </div>
+      <div class="field-group"><label class="field-label">What does your startup do?</label><textarea class="field-input" id="rev-description" rows="3" placeholder="Describe your startup..."></textarea></div>
+      <div class="field-row">
+        <div class="field-group"><label class="field-label">Industry / Market</label><input class="field-input" id="rev-industry" /></div>
+        <div class="field-group"><label class="field-label">Co-founder(s)</label><input class="field-input" id="rev-cofounders" /></div>
+      </div>
+      <div class="field-group" id="rev-extra-group" style="display:none">
+        <label class="field-label">Key insights extracted from documents</label>
+        <textarea class="field-input" id="rev-extra" rows="4" placeholder="Extracted insights will appear here..."></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Current Stage</label>
+        <div class="stage-select" id="stage-select-rev">
+          <div class="stage-opt" onclick="selectStageRev(this,'Idea Pre-Product')"><div class="stage-opt-icon">&#x1F4A1;</div>Idea</div>
+          <div class="stage-opt selected" onclick="selectStageRev(this,'Pre-Seed Founding')"><div class="stage-opt-icon">&#x1F331;</div>Pre-Seed</div>
+          <div class="stage-opt" onclick="selectStageRev(this,'Seed Early Traction')"><div class="stage-opt-icon">&#x1F680;</div>Seed</div>
+          <div class="stage-opt" onclick="selectStageRev(this,'Series A Scaling')"><div class="stage-opt-icon">&#x1F4C8;</div>Series A</div>
+          <div class="stage-opt" onclick="selectStageRev(this,'Series B+ Growth')"><div class="stage-opt-icon">&#x26A1;</div>Series B+</div>
+          <div class="stage-opt" onclick="selectStageRev(this,'Revenue Bootstrapped')"><div class="stage-opt-icon">&#x1F4B0;</div>Bootstrapped</div>
+        </div>
+      </div>
+      <div class="ob-btn-row">
+        <button class="btn-secondary" id="review-back-btn" onclick="goToStep(2)">&larr; Back</button>
+        <button class="btn-primary" onclick="completeOnboarding()" style="flex:1">Launch my OS &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidebar">
+    <div class="logo"><div class="logo-mark">Founder OS</div><div class="logo-sub">Startup Operating System</div></div>
+    <div class="stage-badge"><div class="stage-label">Current Stage</div><div class="stage-name" id="sidebar-stage">Pre-Seed Founding</div></div>
+    <div class="nav-section">
+      <div class="nav-label">Core</div>
+      <button class="nav-item active" onclick="showSection('home')"><span class="nav-icon">&#x2302;</span> Dashboard</button>
+      <button class="nav-item" onclick="showSection('advisor')"><span class="nav-icon">&#x25C8;</span> AI Advisor</button>
+      <button class="nav-item" onclick="showSection('checklist')"><span class="nav-icon">&#x2713;</span> Launch Checklist</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Build</div>
+      <button class="nav-item" onclick="showSection('team')"><span class="nav-icon">&#x25CE;</span> Team &amp; Equity</button>
+      <button class="nav-item" onclick="showSection('legal')"><span class="nav-icon">&#x25FB;</span> Legal &amp; Structure</button>
+      <button class="nav-item" onclick="showSection('product')"><span class="nav-icon">&#x25C6;</span> Product Strategy</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Grow</div>
+      <button class="nav-item" onclick="showSection('investors')"><span class="nav-icon">&#x25C7;</span> Investors &amp; Deals</button>
+      <button class="nav-item" onclick="showSection('gtm')"><span class="nav-icon">&#x2192;</span> Go-to-Market</button>
+    </div>
+    <div style="padding:12px;margin-top:auto;border-top:1px solid var(--border)">
+      <button onclick="resetOnboarding()" style="width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">&#x27F3; Edit Company Info</button>
+      <button onclick="clearAllData()" style="width:100%;margin-top:6px;padding:8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">&#x2715; Clear all data</button>
+    </div>
+  </nav>
+  <main class="main">
+    <div class="topbar">
+      <div><div class="page-title" id="page-title">Dashboard</div><div class="page-subtitle" id="page-subtitle">Your startup at a glance</div></div>
+      <button class="hamburger" onclick="openMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="mobile-overlay" id="mobile-overlay" onclick="closeMobileNav()" style="display:none"></div>
+    <div class="mobile-drawer" id="mobile-drawer" style="display:none">
+      <button class="mobile-drawer-close" onclick="closeMobileNav()">&#x2715;</button>
+      <div class="logo" style="padding-right:48px"><div class="logo-mark">Founder OS</div><div class="logo-sub">Startup Operating System</div></div>
+      <div class="stage-badge" style="margin:16px 12px"><div class="stage-label">Current Stage</div><div class="stage-name" id="drawer-stage">Pre-Seed Founding</div></div>
+      <div class="nav-section">
+        <div class="nav-label">Core</div>
+        <button class="nav-item" id="dnav-home" onclick="showSection('home');closeMobileNav()"><span class="nav-icon">&#x2302;</span> Dashboard</button>
+        <button class="nav-item" id="dnav-advisor" onclick="showSection('advisor');closeMobileNav()"><span class="nav-icon">&#x25C8;</span> AI Advisor</button>
+        <button class="nav-item" id="dnav-checklist" onclick="showSection('checklist');closeMobileNav()"><span class="nav-icon">&#x2713;</span> Launch Checklist</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Build</div>
+        <button class="nav-item" id="dnav-team" onclick="showSection('team');closeMobileNav()"><span class="nav-icon">&#x25CE;</span> Team &amp; Equity</button>
+        <button class="nav-item" id="dnav-legal" onclick="showSection('legal');closeMobileNav()"><span class="nav-icon">&#x25FB;</span> Legal &amp; Structure</button>
+        <button class="nav-item" id="dnav-product" onclick="showSection('product');closeMobileNav()"><span class="nav-icon">&#x25C6;</span> Product Strategy</button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Grow</div>
+        <button class="nav-item" id="dnav-investors" onclick="showSection('investors');closeMobileNav()"><span class="nav-icon">&#x25C7;</span> Investors &amp; Deals</button>
+        <button class="nav-item" id="dnav-gtm" onclick="showSection('gtm');closeMobileNav()"><span class="nav-icon">&#x2192;</span> Go-to-Market</button>
+      </div>
+      <div style="padding:12px;margin-top:auto;border-top:1px solid var(--border)">
+        <button onclick="resetOnboarding();closeMobileNav()" style="width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer">&#x27F3; Edit Company Info</button>
+        <button onclick="clearAllData()" style="width:100%;margin-top:6px;padding:8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer">&#x2715; Clear all data</button>
+      </div>
+    </div>
+    <nav class="mobile-nav-bottom">
+      <div class="mob-nav-items">
+        <button class="mob-nav-btn active" id="mob-home" onclick="showSection('home')"><span class="mob-icon">&#x2302;</span><span class="mob-label">Home</span></button>
+        <button class="mob-nav-btn" id="mob-advisor" onclick="showSection('advisor')"><span class="mob-icon">&#x25C8;</span><span class="mob-label">Advisor</span></button>
+        <button class="mob-nav-btn" id="mob-checklist" onclick="showSection('checklist')"><span class="mob-icon">&#x2713;</span><span class="mob-label">Checklist</span></button>
+        <button class="mob-nav-btn" id="mob-team" onclick="showSection('team')"><span class="mob-icon">&#x25CE;</span><span class="mob-label">Team</span></button>
+        <button class="mob-nav-btn" id="mob-more" onclick="openMobileNav()"><span class="mob-icon">&#x2630;</span><span class="mob-label">More</span></button>
+      </div>
+    </nav>
+
+```
+<div class="content active" id="section-home">
+  <div class="cards-grid">
+    <div class="card" onclick="showSection('advisor')"><div class="card-icon">&#x25C8;</div><div class="card-title">AI Advisor</div><div class="card-desc">Ask anything about strategy, legal structure, hiring, fundraising, or competitive positioning.</div><div class="card-cta">Open advisor &rarr;</div></div>
+    <div class="card" onclick="showSection('checklist')"><div class="card-icon">&#x2713;</div><div class="card-title">Launch Checklist</div><div class="card-desc">Track your milestones across legal, product, team, and go-to-market.</div><div class="card-cta">View checklist &rarr;</div></div>
+    <div class="card" onclick="showSection('team')"><div class="card-icon">&#x25CE;</div><div class="card-title">Team &amp; Equity</div><div class="card-desc">Map your founding team, advisors, prospects, and equity structure.</div><div class="card-cta">View team &rarr;</div></div>
+    <div class="card" onclick="showSection('legal')"><div class="card-icon">&#x25FB;</div><div class="card-title">Legal &amp; Structure</div><div class="card-desc">Entity formation, co-founder agreements, IP assignment, and open legal questions.</div><div class="card-cta">View structure &rarr;</div></div>
+    <div class="card" onclick="showSection('investors')"><div class="card-icon">&#x25C7;</div><div class="card-title">Investors &amp; Deals</div><div class="card-desc">Analyze term sheets, model dilution, and track your fundraising pipeline.</div><div class="card-cta">View deals &rarr;</div></div>
+    <div class="card" onclick="showSection('gtm')"><div class="card-icon">&#x2192;</div><div class="card-title">Go-to-Market</div><div class="card-desc">ICP definition, channel strategy, early customers, and competitive positioning.</div><div class="card-cta">View GTM &rarr;</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Priority Actions</div><div class="section-tag">This week</div></div>
+  <div class="checklist" id="priority-actions">
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Add your first priority action</div><div class="check-desc editable" contenteditable="true">Click to edit this description</div></div><span class="check-tag tag-strategy">Strategy</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Add your second priority action</div><div class="check-desc editable" contenteditable="true">Click to edit this description</div></div><span class="check-tag tag-legal">Legal</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Add your third priority action</div><div class="check-desc editable" contenteditable="true">Click to edit this description</div></div><span class="check-tag tag-team">Team</span></div>
+  </div>
+  <button class="add-row-btn" onclick="addPriorityAction()">+ Add action</button>
+</div>
+
+<div class="content" id="section-advisor">
+  <div class="chat-wrap">
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg ai">
+        <div class="msg-avatar">OS</div>
+        <div class="msg-body">
+          <div class="msg-name">Founder OS &middot; AI Advisor</div>
+          <div class="msg-text">
+            <p>I'm your startup advisor. Once you've filled in your company details, I'll have full context on your business to give you specific, actionable advice.</p>
+            <p>Ask me anything about building your startup &mdash; legal structure, co-founder dynamics, hiring, fundraising, or competitive strategy.</p>
+          </div>
+          <div class="suggestion-chips">
+            <span class="chip" onclick="askQuestion(this)">How should I structure equity with my co-founder?</span>
+            <span class="chip" onclick="askQuestion(this)">What legal documents do I need first?</span>
+            <span class="chip" onclick="askQuestion(this)">How do I find my first paying customer?</span>
+            <span class="chip" onclick="askQuestion(this)">What should I put in a seed pitch deck?</span>
+            <span class="chip" onclick="askQuestion(this)">How do I think about my TAM?</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <div class="module-selector">
+        <button class="mod-btn active" onclick="setModule(this,'general')">General</button>
+        <button class="mod-btn" onclick="setModule(this,'legal')">Legal</button>
+        <button class="mod-btn" onclick="setModule(this,'team')">Team</button>
+        <button class="mod-btn" onclick="setModule(this,'investors')">Investors</button>
+        <button class="mod-btn" onclick="setModule(this,'gtm')">GTM</button>
+        <button class="mod-btn" onclick="setModule(this,'product')">Product</button>
+      </div>
+      <div class="input-row">
+        <textarea class="chat-input" id="chat-input" placeholder="Ask your advisor anything..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">&#x2191;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content" id="section-checklist">
+  <div class="progress-wrap">
+    <div class="progress-header"><span>Overall Progress</span><span id="progress-pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div class="section-header"><div class="section-title">Legal &amp; Formation</div><div class="section-tag">Foundation</div></div>
+  <div class="checklist" id="legal-checklist">
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Sign co-founder agreement</div><div class="check-desc editable" contenteditable="true">Equity split, vesting schedule, IP assignment, roles, decision rights.</div></div><span class="check-tag tag-legal">Legal</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Incorporate entity</div><div class="check-desc editable" contenteditable="true">Delaware C-Corp recommended for VC-backed startups.</div></div><span class="check-tag tag-legal">Legal</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">IP assignment agreements</div><div class="check-desc editable" contenteditable="true">All founders assign IP to the company. Critical for future due diligence.</div></div><span class="check-tag tag-legal">Legal</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Open business bank account</div><div class="check-desc editable" contenteditable="true">Keep business finances separate from personal from day one.</div></div><span class="check-tag tag-legal">Legal</span></div>
+  </div>
+  <button class="add-row-btn" onclick="addCheckItem('legal-checklist','legal')">+ Add item</button>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Product &amp; Market</div><div class="section-tag">Traction</div></div>
+  <div class="checklist" id="product-checklist">
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Define and validate core problem</div><div class="check-desc editable" contenteditable="true">Interview 10+ potential customers before building.</div></div><span class="check-tag tag-product">Product</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Ship MVP</div><div class="check-desc editable" contenteditable="true">The simplest version that solves the core problem.</div></div><span class="check-tag tag-product">Product</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Get first paying customer</div><div class="check-desc editable" contenteditable="true">Even $1 in revenue validates willingness to pay.</div></div><span class="check-tag tag-strategy">Strategy</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Establish retention / usage metric</div><div class="check-desc editable" contenteditable="true">Define and track your North Star metric.</div></div><span class="check-tag tag-strategy">Strategy</span></div>
+  </div>
+  <button class="add-row-btn" onclick="addCheckItem('product-checklist','product')">+ Add item</button>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Team Building</div><div class="section-tag">People</div></div>
+  <div class="checklist" id="team-checklist">
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Identify critical skill gaps on founding team</div><div class="check-desc editable" contenteditable="true">What's missing that will block growth?</div></div><span class="check-tag tag-team">Team</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Recruit first advisor</div><div class="check-desc editable" contenteditable="true">Industry credibility and customer introductions. 0.1-0.5% equity typical.</div></div><span class="check-tag tag-team">Team</span></div>
+  </div>
+  <button class="add-row-btn" onclick="addCheckItem('team-checklist','team')">+ Add item</button>
+</div>
+
+<div class="content" id="section-team">
+  <div class="section-header"><div class="section-title">Founding Team</div><div class="section-tag">Confirmed</div></div>
+  <div class="team-grid" id="founders-table">
+    <div class="team-row header"><div>Person</div><div>Role</div><div>Status</div><div>Equity</div></div>
+    <div class="team-row"><div><div class="person-name editable" contenteditable="true">Founder 1</div><div class="person-role editable" contenteditable="true">Company Location</div></div><div class="editable" contenteditable="true">CEO, Product</div><div><span class="status-pill pill-active">Confirmed</span></div><div class="editable" contenteditable="true">50%</div></div>
+    <div class="team-row"><div><div class="person-name editable" contenteditable="true">Founder 2</div><div class="person-role editable" contenteditable="true">Company Location</div></div><div class="editable" contenteditable="true">CTO, Engineering</div><div><span class="status-pill pill-active">Confirmed</span></div><div class="editable" contenteditable="true">50%</div></div>
+  </div>
+  <button class="add-row-btn" onclick="addTeamRow('founders-table')">+ Add founder</button>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Prospective Hires &amp; Advisors</div><div class="section-tag">Pipeline</div></div>
+  <div class="team-grid" id="prospects-table">
+    <div class="team-row header"><div>Person</div><div>Why Relevant</div><div>Status</div><div>Potential Role</div></div>
+    <div class="team-row"><div><div class="person-name editable" contenteditable="true">Prospect Name</div><div class="person-role editable" contenteditable="true">Current Company</div></div><div class="editable" contenteditable="true">Relevant background and why they matter</div><div><span class="status-pill pill-prospect">To Approach</span></div><div class="editable" contenteditable="true">Advisor / Hire</div></div>
+  </div>
+  <button class="add-row-btn" onclick="addTeamRow('prospects-table')">+ Add prospect</button>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Critical Future Hires</div><div class="section-tag">Roadmap</div></div>
+  <div class="checklist" id="hires-checklist">
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">First critical hire role</div><div class="check-desc editable" contenteditable="true">Why this role is essential and what to look for.</div></div><span class="check-tag tag-team">Post-seed</span></div>
+  </div>
+  <button class="add-row-btn" onclick="addCheckItem('hires-checklist','team')">+ Add hire</button>
+</div>
+
+<div class="content" id="section-legal">
+  <div class="section-header"><div class="section-title">Company Structure</div><div class="section-tag">Overview</div></div>
+  <div class="cards-grid">
+    <div class="card"><div class="card-icon">&#x25FB;</div><div class="card-title">Entity Type</div><div class="card-desc editable" contenteditable="true">Add your entity type and jurisdiction here. Delaware C-Corp is standard for VC-backed startups.</div></div>
+    <div class="card"><div class="card-icon">&#x25C8;</div><div class="card-title">Equity Structure</div><div class="card-desc editable" contenteditable="true">Add equity split details, vesting schedule, and any option pool here.</div></div>
+    <div class="card"><div class="card-icon">&#x2192;</div><div class="card-title">IP Ownership</div><div class="card-desc editable" contenteditable="true">Describe how IP is assigned to the company and any transfer issues to resolve.</div></div>
+    <div class="card"><div class="card-icon">&#x25C7;</div><div class="card-title">Initial Capital</div><div class="card-desc editable" contenteditable="true">Describe how the company is initially funded and by whom.</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Open Legal Questions</div><div class="section-tag">Needs Resolution</div></div>
+  <div class="checklist" id="legal-questions">
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Add your first open legal question</div><div class="check-desc editable" contenteditable="true">What do you need to resolve with an attorney?</div></div><span class="check-tag tag-legal">Legal</span></div>
+  </div>
+  <button class="add-row-btn" onclick="addCheckItem('legal-questions','legal')">+ Add question</button>
+</div>
+
+<div class="content" id="section-product">
+  <div class="section-header"><div class="section-title">Product Roadmap</div><div class="section-tag">Milestones</div></div>
+  <div class="checklist" id="product-roadmap">
+    <div class="check-item done" onclick="toggleCheck(this)"><div class="check-box">&#x2713;</div><div class="check-content"><div class="check-title editable" contenteditable="true">MVP shipped</div><div class="check-desc editable" contenteditable="true">Describe what your MVP does and its current status.</div></div><span class="check-tag tag-done">Done</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Next major feature or milestone</div><div class="check-desc editable" contenteditable="true">Describe what you're building next and why.</div></div><span class="check-tag tag-product">Product</span></div>
+    <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">Future milestone</div><div class="check-desc editable" contenteditable="true">Longer term product direction.</div></div><span class="check-tag tag-product">Product</span></div>
+  </div>
+  <button class="add-row-btn" onclick="addCheckItem('product-roadmap','product')">+ Add milestone</button>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Key Metrics</div><div class="section-tag">North Stars</div></div>
+  <div class="cards-grid">
+    <div class="card"><div class="card-icon">&#x25CE;</div><div class="card-title">North Star Metric</div><div class="card-desc editable" contenteditable="true">Define the single metric that best captures your product's value delivery.</div></div>
+    <div class="card"><div class="card-icon">&#x25C8;</div><div class="card-title">Current ARR / Revenue</div><div class="card-desc editable" contenteditable="true">Add your current revenue or ARR here.</div></div>
+    <div class="card"><div class="card-icon">&#x2192;</div><div class="card-title">Target (12 months)</div><div class="card-desc editable" contenteditable="true">What does success look like in 12 months?</div></div>
+  </div>
+</div>
+
+<div class="content" id="section-investors">
+  <div class="section-header"><div class="section-title">Fundraising Plan</div><div class="section-tag">Capital Strategy</div></div>
+  <div class="cards-grid">
+    <div class="card"><div class="card-icon">&#x25C7;</div><div class="card-title">Target Raise</div><div class="card-desc editable" contenteditable="true">Add your target raise amount, instrument (SAFE, equity), and valuation.</div></div>
+    <div class="card"><div class="card-icon">&#x25C8;</div><div class="card-title">Use of Funds</div><div class="card-desc editable" contenteditable="true">How will you allocate the capital? Engineering, sales, ops?</div></div>
+    <div class="card"><div class="card-icon">&#x2192;</div><div class="card-title">Key Milestones to Hit First</div><div class="card-desc editable" contenteditable="true">What traction do you need before approaching investors?</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Investor Pipeline</div><div class="section-tag">Tracking</div></div>
+  <div class="team-grid" id="investor-table">
+    <div class="team-row header"><div>Investor / Fund</div><div>Notes</div><div>Stage</div><div>Target Amount</div></div>
+    <div class="team-row"><div><div class="person-name editable" contenteditable="true">Investor Name</div><div class="person-role editable" contenteditable="true">Fund / Angel</div></div><div class="editable" contenteditable="true">How you know them, warm intro, etc.</div><div><span class="status-pill pill-prospect">To Contact</span></div><div class="editable" contenteditable="true">$-</div></div>
+  </div>
+  <button class="add-row-btn" onclick="addTeamRow('investor-table')">+ Add investor</button>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Deal Analyzer</div><div class="section-tag">AI-Powered</div></div>
+  <div class="deal-box">
+    <p>Paste a term sheet, SAFE note, or investor offer below for an instant analysis of the terms, dilution impact, and what to negotiate.</p>
+    <textarea class="deal-textarea" id="deal-input" placeholder="Paste term sheet or deal terms here..."></textarea>
+    <button class="btn-accent" onclick="analyzeDeal()">Analyze Deal &rarr;</button>
+    <div id="deal-analysis" style="margin-top:16px;display:none"></div>
+  </div>
+</div>
+
+<div class="content" id="section-gtm">
+  <div class="section-header"><div class="section-title">Go-to-Market Strategy</div><div class="section-tag">Growth</div></div>
+  <div class="cards-grid">
+    <div class="card"><div class="card-icon">&#x25CE;</div><div class="card-title">Ideal Customer Profile</div><div class="card-desc editable" contenteditable="true">Describe your ICP - industry, company size, role, pain point, budget, buying process.</div></div>
+    <div class="card"><div class="card-icon">&#x25C8;</div><div class="card-title">Primary Channel</div><div class="card-desc editable" contenteditable="true">How will you reach your first customers? Direct sales, content, partnerships, PLG?</div></div>
+    <div class="card"><div class="card-icon">&#x2192;</div><div class="card-title">Early Pipeline</div><div class="card-desc editable" contenteditable="true">List your first target accounts and warm introductions.</div></div>
+    <div class="card"><div class="card-icon">&#x25C7;</div><div class="card-title">Pricing Model</div><div class="card-desc editable" contenteditable="true">How will you charge? ACV, seats, usage, freemium? What's your target ACV?</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="section-header"><div class="section-title">Competitive Landscape</div><div class="section-tag">Positioning</div></div>
+  <div class="team-grid" id="competitor-table">
+    <div class="team-row header"><div>Competitor</div><div>Their Strength</div><div>Their Weakness</div><div>Your Edge</div></div>
+    <div class="team-row"><div><div class="person-name editable" contenteditable="true">Competitor Name</div><div class="person-role editable" contenteditable="true">Category</div></div><div class="editable" contenteditable="true">What they do well</div><div class="editable" contenteditable="true">Where they fall short</div><div class="editable" contenteditable="true">Why you win</div></div>
+  </div>
+  <button class="add-row-btn" onclick="addCompetitorRow()">+ Add competitor</button>
+</div>
+```
+
+  </main>
+</div>
+
+<script>
+var currentModule='general',isLoading=false;
+var startupContext={},selectedStage='Pre-Seed Founding',selectedStageRev='Pre-Seed Founding';
+var chosenPath=null,uploadedFiles=[];
+
+function selectPath(path){
+  chosenPath=path;
+  document.querySelectorAll('.path-opt').forEach(function(el){el.classList.remove('selected');});
+  document.getElementById('path-'+path).classList.add('selected');
+  document.getElementById('step1-next').disabled=false;
+}
+
+function goToStep(step){
+  document.querySelectorAll('.ob-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.ob-step').forEach(function(s,i){
+    s.classList.remove('active','done');
+    if(i+1<step)s.classList.add('done');
+    else if(i+1===step)s.classList.add('active');
+  });
+  if(step===1)document.getElementById('ob-step-1').classList.add('active');
+  else if(step===2)document.getElementById(chosenPath==='upload'?'ob-step-2-upload':'ob-step-2-manual').classList.add('active');
+  else if(step===3){
+    document.getElementById('ob-step-3').classList.add('active');
+    document.getElementById('rev-extra-group').style.display=chosenPath==='upload'?'block':'none';
+    document.getElementById('review-sub').textContent=chosenPath==='upload'?'AI has extracted context from your documents. Review and edit before launching.':'Confirm your details before launching.';
+  }
+}
+
+function selectStage(el,stage){
+  document.querySelectorAll('#stage-select .stage-opt').forEach(function(o){o.classList.remove('selected');});
+  el.classList.add('selected');selectedStage=stage;
+}
+
+function selectStageRev(el,stage){
+  document.querySelectorAll('#stage-select-rev .stage-opt').forEach(function(o){o.classList.remove('selected');});
+  el.classList.add('selected');selectedStageRev=stage;
+}
+
+function prefillReviewFromManual(){
+  document.getElementById('rev-company').value=document.getElementById('ob-company').value;
+  document.getElementById('rev-founder').value=document.getElementById('ob-founder').value;
+  document.getElementById('rev-description').value=document.getElementById('ob-description').value;
+  document.getElementById('rev-industry').value=document.getElementById('ob-industry').value;
+  document.getElementById('rev-cofounders').value=document.getElementById('ob-cofounders').value;
+  selectedStageRev=selectedStage;
+}
+
+function handleDragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over');}
+function handleDragLeave(e){document.getElementById('drop-zone').classList.remove('drag-over');}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag-over');addFiles(Array.from(e.dataTransfer.files));}
+function handleFileSelect(e){addFiles(Array.from(e.target.files));}
+
+function addFiles(files){
+  var allowed=['pdf','docx','doc','txt','md'];
+  files.forEach(function(f){
+    var ext=f.name.split('.').pop().toLowerCase();
+    if(!allowed.includes(ext)||uploadedFiles.length>=5)return;
+    if(!uploadedFiles.find(function(u){return u.name===f.name;}))uploadedFiles.push(f);
+  });
+  renderFileList();
+  document.getElementById('step2-upload-next').disabled=uploadedFiles.length===0;
+}
+
+function removeFile(name){
+  uploadedFiles=uploadedFiles.filter(function(f){return f.name!==name;});
+  renderFileList();
+  document.getElementById('step2-upload-next').disabled=uploadedFiles.length===0;
+}
+
+function renderFileList(){
+  var list=document.getElementById('file-list');list.innerHTML='';
+  uploadedFiles.forEach(function(f){
+    var ext=f.name.split('.').pop().toLowerCase();
+    var icons={pdf:'&#x1F4C4;',docx:'&#x1F4DD;',doc:'&#x1F4DD;',txt:'&#x1F4C3;',md:'&#x1F4C3;'};
+    var size=f.size>1024*1024?(f.size/(1024*1024)).toFixed(1)+'MB':Math.round(f.size/1024)+'KB';
+    var item=document.createElement('div');item.className='file-item';
+    item.innerHTML='<span class="file-item-icon">'+(icons[ext]||'&#x1F4C4;')+'</span><span class="file-item-name">'+f.name+'</span><span class="file-item-size">'+size+'</span><button class="file-item-remove" onclick="removeFile(\''+f.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">\u00D7</button>';
+    list.appendChild(item);
+  });
+}
+
+function readFileAsText(file){
+  return new Promise(function(resolve){
+    var ext=file.name.split('.').pop().toLowerCase();
+    if(ext==='pdf'){resolve({name:file.name,text:'[PDF: '+file.name+']'});return;}
+    var reader=new FileReader();
+    reader.onload=function(e){resolve({name:file.name,text:e.target.result||'['+file.name+']'});};
+    reader.readAsText(file);
+  });
+}
+
+async function processDocuments(){
+  if(!uploadedFiles.length)return;
+  var panel=document.getElementById('ob-step-2-upload');
+  var dz=document.getElementById('drop-zone'),fl=document.getElementById('file-list'),br=panel.querySelector('.ob-btn-row');
+  dz.style.display='none';fl.style.display='none';br.style.display='none';
+  var proc=document.createElement('div');proc.className='processing-state';
+  proc.innerHTML='<div class="processing-spinner"></div><div class="processing-label">Reading your documents...</div><div class="processing-sub">AI is extracting your startup context</div>';
+  panel.appendChild(proc);
+  try{
+    var contents=await Promise.all(uploadedFiles.map(readFileAsText));
+    var prompt='Extract startup information from these documents and respond ONLY with valid JSON:\n\n{"company":"","founder":"","description":"1-2 sentence description","industry":"","cofounders":"","stage":"one of: Idea Pre-Product, Pre-Seed Founding, Seed Early Traction, Series A Scaling, Series B+ Growth, Revenue Bootstrapped","extra":"3-5 bullet points of key context"}\n\nDocuments:\n\n';
+    contents.forEach(function(f){prompt+='--- '+f.name+' ---\n'+f.text.substring(0,8000)+'\n\n';});
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'You are a startup analyst. Extract structured information from startup documents. Respond with valid JSON only.',messages:[{role:'user',content:prompt}]})});
+    var data=await resp.json();
+    var raw=data.content?data.content.map(function(b){return b.text||'';}).join(''):'{}';
+    var extracted={};
+    try{extracted=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){}
+    document.getElementById('rev-company').value=extracted.company||'';
+    document.getElementById('rev-founder').value=extracted.founder||'';
+    document.getElementById('rev-description').value=extracted.description||'';
+    document.getElementById('rev-industry').value=extracted.industry||'';
+    document.getElementById('rev-cofounders').value=extracted.cofounders||'';
+    document.getElementById('rev-extra').value=extracted.extra||'';
+    panel.removeChild(proc);dz.style.display='';fl.style.display='';br.style.display='';
+    goToStep(3);
+  }catch(err){
+    proc.innerHTML='<div style="font-size:22px;margin-bottom:10px">&#x26A0;</div><div class="processing-label">Could not auto-analyze</div><div class="processing-sub">Fill in details manually on the next screen.</div>';
+    setTimeout(function(){panel.removeChild(proc);dz.style.display='';fl.style.display='';br.style.display='';goToStep(3);},2200);
+  }
+}
+
+function completeOnboarding(){
+  function c(id){return document.getElementById(id).value.trim();}
+  startupContext={company:c('rev-company')||'My Startup',founder:c('rev-founder')||'Founder',description:c('rev-description'),industry:c('rev-industry'),cofounders:c('rev-cofounders'),stage:selectedStageRev,extra:c('rev-extra')};
+  document.getElementById('sidebar-stage').textContent=selectedStageRev;
+  if(document.getElementById('drawer-stage'))document.getElementById('drawer-stage').textContent=selectedStageRev;
+  document.getElementById('page-subtitle').textContent=startupContext.company+' - '+selectedStageRev;
+  document.getElementById('onboarding').style.display='none';
+  var greeting=document.querySelector('#chat-messages .msg-text p');
+  if(greeting)greeting.innerHTML="I'm your startup advisor for <strong>"+startupContext.company+"</strong>. "+(startupContext.description||"Tell me more about what you're building.")+" Ask me anything.";
+  debouncedSave();
+}
+
+function resetOnboarding(){document.getElementById('onboarding').style.display='flex';}
+
+function buildSystemContext(){
+  var c=startupContext;
+  return "You are the AI advisor inside Founder OS, a startup operating system.\n\nSTARTUP CONTEXT:\n- Company: "+(c.company||'[Not set]')+"\n- Founder: "+(c.founder||'[Not set]')+"\n- Description: "+(c.description||'[Not set]')+"\n- Industry: "+(c.industry||'[Not set]')+"\n- Co-founders: "+(c.cofounders||'[Not set]')+"\n- Stage: "+(c.stage||'[Not set]')+(c.extra?'\n- Additional context:\n'+c.extra:'')+"\n\nYou are a knowledgeable, direct startup advisor. Be specific, practical, and direct. Reference the founder's specific context when relevant. For legal/financial matters, give useful guidance while noting they should verify with a professional.";
+}
+
+function openMobileNav(){
+  document.getElementById('mobile-overlay').style.display='block';
+  document.getElementById('mobile-drawer').style.display='flex';
+  requestAnimationFrame(function(){
+    document.getElementById('mobile-overlay').classList.add('open');
+    document.getElementById('mobile-drawer').classList.add('open');
+  });
+  document.body.style.overflow='hidden';
+}
+
+function closeMobileNav(){
+  document.getElementById('mobile-overlay').classList.remove('open');
+  document.getElementById('mobile-drawer').classList.remove('open');
+  document.body.style.overflow='';
+  setTimeout(function(){
+    document.getElementById('mobile-overlay').style.display='none';
+    document.getElementById('mobile-drawer').style.display='none';
+  },250);
+}
+
+function showSection(id){
+  document.querySelectorAll('.content').forEach(function(el){el.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(el){el.classList.remove('active');});
+  document.getElementById('section-'+id).classList.add('active');
+  var T={home:['Dashboard',(startupContext.company||'Your Startup')+' - '+(startupContext.stage||'Pre-Seed')],advisor:['AI Advisor','Ask anything about your startup'],checklist:['Launch Checklist','Track your founding milestones'],team:['Team & Equity','Founders, prospects, and key hires'],legal:['Legal & Structure','Entity, agreements, and open questions'],product:['Product Strategy','Roadmap, metrics, and milestones'],investors:['Investors & Deals','Fundraising and deal analysis'],gtm:['Go-to-Market','ICP, channels, and competitive positioning']};
+  if(T[id]){document.getElementById('page-title').textContent=T[id][0];document.getElementById('page-subtitle').textContent=T[id][1];}
+  document.querySelectorAll('.nav-item').forEach(function(btn){if(btn.getAttribute('onclick')&&btn.getAttribute('onclick').indexOf("'"+id+"'")>=0)btn.classList.add('active');});
+  var bottomIds=['home','advisor','checklist','team'];
+  document.querySelectorAll('.mob-nav-btn').forEach(function(b){b.classList.remove('active');});
+  if(bottomIds.indexOf(id)>=0){var mb=document.getElementById('mob-'+id);if(mb)mb.classList.add('active');}
+  if(document.getElementById('dnav-'+id))document.getElementById('dnav-'+id).classList.add('active');
+}
+
+function toggleCheck(el){
+  if(window.getSelection().toString())return;
+  el.classList.toggle('done');
+  el.querySelector('.check-box').textContent=el.classList.contains('done')?'\u2713':'';
+  updateProgress();
+}
+
+function updateProgress(){
+  var lists=['legal-checklist','product-checklist','team-checklist'];
+  var total=0,done=0;
+  lists.forEach(function(id){var l=document.getElementById(id);if(l){total+=l.querySelectorAll('.check-item').length;done+=l.querySelectorAll('.check-item.done').length;}});
+  var pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('progress-pct').textContent=pct+'%';
+  document.getElementById('progress-fill').style.width=pct+'%';
+}
+
+function addCheckItem(listId,tagType){
+  var tm={legal:'tag-legal',strategy:'tag-strategy',team:'tag-team',product:'tag-product'};
+  var tl={legal:'Legal',strategy:'Strategy',team:'Team',product:'Product'};
+  var item=document.createElement('div');item.className='check-item';item.onclick=function(){toggleCheck(this);};
+  item.innerHTML='<div class="check-box"></div><div class="check-content"><div class="check-title editable" contenteditable="true">New item - click to edit</div><div class="check-desc editable" contenteditable="true">Add description here</div></div><span class="check-tag '+(tm[tagType]||'tag-strategy')+'">'+(tl[tagType]||'Todo')+'</span>';
+  document.getElementById(listId).appendChild(item);item.querySelector('.check-title').focus();
+}
+
+function addPriorityAction(){addCheckItem('priority-actions','strategy');}
+
+function addTeamRow(tableId){
+  var row=document.createElement('div');row.className='team-row';
+  row.innerHTML='<div><div class="person-name editable" contenteditable="true">New Person</div><div class="person-role editable" contenteditable="true">Company</div></div><div class="editable" contenteditable="true">Role or notes</div><div><span class="status-pill pill-prospect">To Approach</span></div><div class="editable" contenteditable="true">TBD</div>';
+  document.getElementById(tableId).appendChild(row);row.querySelector('.person-name').focus();
+}
+
+function addCompetitorRow(){
+  var row=document.createElement('div');row.className='team-row';
+  row.innerHTML='<div><div class="person-name editable" contenteditable="true">Competitor</div><div class="person-role editable" contenteditable="true">Category</div></div><div class="editable" contenteditable="true">What they do well</div><div class="editable" contenteditable="true">Where they fall short</div><div class="editable" contenteditable="true">Why you win</div>';
+  document.getElementById('competitor-table').appendChild(row);row.querySelector('.person-name').focus();
+}
+
+function setModule(btn,mod){currentModule=mod;document.querySelectorAll('.mod-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
+function askQuestion(chip){document.getElementById('chat-input').value=chip.textContent;sendMessage();}
+
+function appendMessage(role,html){
+  var msgs=document.getElementById('chat-messages'),div=document.createElement('div');div.className='msg '+role;
+  div.innerHTML='<div class="msg-avatar">'+(role==='ai'?'OS':'You')+'</div><div class="msg-body"><div class="msg-name">'+(role==='ai'?'Founder OS &middot; AI Advisor':'You')+'</div><div class="msg-text">'+html+'</div></div>';
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+
+function showLoading(){
+  var msgs=document.getElementById('chat-messages'),div=document.createElement('div');div.className='msg ai';div.id='loading-msg';
+  div.innerHTML='<div class="msg-avatar">OS</div><div class="msg-body"><div class="msg-name">Founder OS &middot; AI Advisor</div><div class="msg-text"><div class="loading-dots"><span></span><span></span><span></span></div></div></div>';
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+
+function removeLoading(){var el=document.getElementById('loading-msg');if(el)el.remove();}
+
+function formatResponse(raw){
+  return raw.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').split('\n\n').map(function(para){
+    if(para.startsWith('- ')||para.startsWith('- ')){
+      var items=para.split('\n').filter(function(l){return l.trim();}).map(function(l){return '<li>'+l.replace(/^[-]\s*/,'')+'</li>';}).join('');
+      return '<ul>'+items+'</ul>';
+    }
+    return '<p>'+para.replace(/\n/g,'<br>')+'</p>';
+  }).join('');
+}
+
+async function sendMessage(){
+  if(isLoading)return;
+  var input=document.getElementById('chat-input'),text=input.value.trim();
+  if(!text)return;
+  input.value='';input.style.height='auto';isLoading=true;document.getElementById('send-btn').disabled=true;
+  appendMessage('user','<p>'+text.replace(/\n/g,'<br>')+'</p>');showLoading();
+  var mc={legal:'Focus on legal matters.',team:'Focus on team building.',investors:'Focus on fundraising.',gtm:'Focus on go-to-market.',product:'Focus on product strategy.',general:''};
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSystemContext()+'\n\n'+(mc[currentModule]||''),messages:[{role:'user',content:text}]})});
+    var data=await resp.json();removeLoading();
+    var txt=data.content?data.content.map(function(b){return b.text||'';}).join(''):'Sorry, I had trouble responding.';
+    appendMessage('ai',formatResponse(txt));
+  }catch(e){removeLoading();appendMessage('ai','<p>Connection error. Please try again.</p>');}
+  isLoading=false;document.getElementById('send-btn').disabled=false;
+}
+
+async function analyzeDeal(){
+  var text=document.getElementById('deal-input').value.trim();
+  if(!text){alert('Paste some deal terms first.');return;}
+  var out=document.getElementById('deal-analysis');out.style.display='block';
+  out.innerHTML='<div class="loading-dots" style="padding:16px 0"><span></span><span></span><span></span></div>';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSystemContext()+'\n\nAnalyze deal terms. Cover: 1) Key terms summary, 2) Dilution impact, 3) Red flags, 4) What to negotiate.',messages:[{role:'user',content:text}]})});
+    var data=await resp.json();
+    var txt=data.content?data.content.map(function(b){return b.text||'';}).join(''):'Could not analyze.';
+    out.innerHTML='<div style="padding:16px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);font-size:13px;line-height:1.7">'+formatResponse(txt)+'</div>';
+  }catch(e){out.innerHTML='<p style="color:var(--danger);font-size:13px;padding:12px 0">Analysis failed. Please try again.</p>';}
+}
+
+document.addEventListener('click',function(e){if(e.target.classList.contains('editable'))e.stopPropagation();},true);
+
+var SAVE_KEY='founderOS_v2';
+
+function saveState(){
+  try{
+    var state={context:startupContext,stage:selectedStageRev,onboardingDone:document.getElementById('onboarding').style.display==='none',editables:{},checkStates:{}};
+    document.querySelectorAll('[contenteditable="true"]').forEach(function(el,i){state.editables[i]=el.innerHTML;});
+    document.querySelectorAll('.check-item').forEach(function(el,i){state.checkStates[i]=el.classList.contains('done');});
+    localStorage.setItem(SAVE_KEY,JSON.stringify(state));showSaveIndicator();
+  }catch(e){console.warn('Save failed',e);}
+}
+
+function loadState(){
+  try{
+    var raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;
+    var state=JSON.parse(raw);
+    if(state.context){startupContext=state.context;selectedStageRev=state.stage||'Pre-Seed Founding';}
+    if(state.onboardingDone&&state.context&&state.context.company){
+      document.getElementById('onboarding').style.display='none';
+      document.getElementById('sidebar-stage').textContent=selectedStageRev;
+      document.getElementById('page-subtitle').textContent=(state.context.company||'Your Startup')+' - '+selectedStageRev;
+      var g=document.querySelector('#chat-messages .msg-text p');
+      if(g&&state.context.company)g.innerHTML="I'm your startup advisor for <strong>"+state.context.company+"</strong>. "+(state.context.description||"Tell me more about what you're building.")+" Ask me anything.";
+    }
+    if(state.editables)document.querySelectorAll('[contenteditable="true"]').forEach(function(el,i){if(state.editables[i]!==undefined)el.innerHTML=state.editables[i];});
+    if(state.checkStates){document.querySelectorAll('.check-item').forEach(function(el,i){if(state.checkStates[i]){el.classList.add('done');var b=el.querySelector('.check-box');if(b)b.textContent='\u2713';}});updateProgress();}
+    return true;
+  }catch(e){console.warn('Load failed',e);return false;}
+}
+
+function showSaveIndicator(){
+  var ind=document.getElementById('save-indicator');
+  if(!ind){ind=document.createElement('div');ind.id='save-indicator';ind.style.cssText='position:fixed;bottom:20px;right:20px;z-index:900;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:"DM Mono",monospace;font-size:11px;color:var(--accent);opacity:0;transition:opacity 0.3s;pointer-events:none;';document.body.appendChild(ind);}
+  ind.textContent='\u2713 Saved';ind.style.opacity='1';clearTimeout(ind._t);ind._t=setTimeout(function(){ind.style.opacity='0';},1800);
+}
+
+function clearAllData(){if(confirm('Clear all saved data and start fresh?')){localStorage.removeItem(SAVE_KEY);location.reload();}}
+
+var saveTimer;
+function debouncedSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveState,800);}
+
+var _ot=toggleCheck;window.toggleCheck=function(el){_ot(el);debouncedSave();};
+var _oa=addCheckItem;window.addCheckItem=function(a,b){_oa(a,b);setTimeout(debouncedSave,100);};
+var _otr=addTeamRow;window.addTeamRow=function(a){_otr(a);setTimeout(debouncedSave,100);};
+var _oc=addCompetitorRow;window.addCompetitorRow=function(){_oc();setTimeout(debouncedSave,100);};
+document.addEventListener('input',function(e){if(e.target.hasAttribute('contenteditable'))debouncedSave();});
+
+window.addEventListener('DOMContentLoaded',function(){setTimeout(loadState,50);});
+</script>
+
+</body>
+</html>
